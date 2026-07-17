@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
-<title>Moonfang — Monster Fighting Arena</title>
+<title>Fur &amp; Fury — Animal Fighting Arena</title>
 <style>
   :root{
     --bg:#150f22; --panel:#241c38;
@@ -113,8 +113,8 @@
 <body>
 <div id="app">
   <div id="select">
-    <h1 class="title">MOONFANG</h1>
-    <div class="subtitle">a moonlit monster brawler</div>
+    <h1 class="title">FUR &amp; FURY</h1>
+    <div class="subtitle">an animal fighting arena</div>
     <div class="sizes" id="topMode">
       <button id="modeLocalBtn" class="active">LOCAL</button>
       <button id="modeOnlineBtn">ONLINE</button>
@@ -246,6 +246,105 @@ function makeAttacks(weapon){
   const w = WEAPON_STATS[weapon];
   return { weapon, light:Object.assign({},w.light), heavy:Object.assign({},w.heavy), weaponColor:w.color };
 }
+
+addChar(Object.assign({
+  id:'shade', name:'SHADE', species:'Panther', weapon:'War Claws',
+  hp:90, speed:4.1, jump:12,
+  fur:'#2b2438', furDark:'#1a1624', belly:'#4a4460', eye:'#7bd389',
+  blurb:'Silent hunter · deadly claws',
+  sprite:'img/shade.png'
+}, makeAttacks('War Claws')));
+
+addChar(Object.assign({
+  id:'scrap', name:'SCRAP', species:'Rat', weapon:'Katana',
+  hp:76, speed:4.5, jump:11,
+  fur:'#8a8478', furDark:'#5c584f', belly:'#c7c2b3', eye:'#ff6b6b',
+  blurb:'Underestimated · surprisingly sharp'
+}, makeAttacks('Katana')));
+
+addChar(Object.assign({
+  id:'dust', name:'DUST', species:'Coyote', weapon:'Sword & Shield',
+  hp:98, speed:3.6, jump:11,
+  fur:'#b98a55', furDark:'#7d5c34', belly:'#e6cf9e', eye:'#ffd166',
+  blurb:'Desert scrapper · steady guard'
+}, makeAttacks('Sword & Shield')));
+
+addChar(Object.assign({
+  id:'raja', name:'RAJA', species:'Tiger', weapon:'Greataxe',
+  hp:118, speed:3.0, jump:10.5,
+  fur:'#e08a2e', furDark:'#a85c12', belly:'#fbe3b0', eye:'#59b8ff',
+  blurb:'Striped brawler · heavy hitter'
+}, makeAttacks('Greataxe')));
+
+addChar(Object.assign({
+  id:'cackle', name:'CACKLE', species:'Hyena', weapon:'War Claws',
+  hp:92, speed:4.0, jump:11.5,
+  fur:'#c9b880', furDark:'#8f7f4e', belly:'#efe6c4', eye:'#c792ea',
+  blurb:'Pack hunter · relentless swipes'
+}, makeAttacks('War Claws')));
+
+addChar(Object.assign({
+  id:'river', name:'RIVER', species:'Otter', weapon:'Orb',
+  hp:84, speed:4.0, jump:12,
+  fur:'#6d5636', furDark:'#453522', belly:'#c9b48f', eye:'#59b8ff',
+  blurb:'Slippery mystic · river magic'
+}, makeAttacks('Orb')));
+
+addChar(Object.assign({
+  id:'bandit', name:'BANDIT', species:'Raccoon', weapon:'Spear',
+  hp:90, speed:3.6, jump:11.5,
+  fur:'#5a5a5f', furDark:'#333338', belly:'#c7c7cc', eye:'#ffd166',
+  blurb:'Masked trickster · long reach'
+}, makeAttacks('Spear')));
+
+addChar(Object.assign({
+  id:'grit', name:'GRIT', species:'Badger', weapon:'Greataxe',
+  hp:110, speed:2.8, jump:10,
+  fur:'#4a4a52', furDark:'#242428', belly:'#e8e6e0', eye:'#f2e3c6',
+  blurb:"Stubborn digger · won't back down"
+}, makeAttacks('Greataxe')));
+
+addChar(Object.assign({
+  id:'slink', name:'SLINK', species:'Weasel', weapon:'Katana',
+  hp:78, speed:4.6, jump:12,
+  fur:'#c9a25a', furDark:'#8f6f38', belly:'#f2e3c0', eye:'#ff6b6b',
+  blurb:'Lightning quick · thin blade'
+}, makeAttacks('Katana')));
+
+addChar(Object.assign({
+  id:'pin', name:'PIN', species:'Hedgehog', weapon:'Sword & Shield',
+  hp:96, speed:2.9, jump:10.5,
+  fur:'#8a6a4a', furDark:'#5c4530', belly:'#d9c2a0', eye:'#7bd389',
+  blurb:'Spiky defender · rolls with it'
+}, makeAttacks('Sword & Shield')));
+
+addChar(Object.assign({
+  id:'nutkin', name:'NUTKIN', species:'Squirrel', weapon:'War Claws',
+  hp:80, speed:4.4, jump:13.5,
+  fur:'#a8622f', furDark:'#6e3f1c', belly:'#e8c9a0', eye:'#ffd166',
+  blurb:'Treetop acrobat · quick swipes'
+}, makeAttacks('War Claws')));
+
+addChar(Object.assign({
+  id:'stag', name:'STAG', species:'Deer', weapon:'Spear',
+  hp:88, speed:3.9, jump:12.5,
+  fur:'#b98d5e', furDark:'#7a5c3a', belly:'#e8d3ae', eye:'#59b8ff',
+  blurb:'Graceful · keeps foes at range'
+}, makeAttacks('Spear')));
+
+addChar(Object.assign({
+  id:'crag', name:'CRAG', species:'Goat', weapon:'Sword & Shield',
+  hp:104, speed:3.2, jump:11,
+  fur:'#d8d2c4', furDark:'#9c968a', belly:'#f4f0e6', eye:'#ff6b6b',
+  blurb:'Mountain brawler · headstrong guard'
+}, makeAttacks('Sword & Shield')));
+
+addChar(Object.assign({
+  id:'trunk', name:'TRUNK', species:'Elephant', weapon:'Greataxe',
+  hp:140, speed:2.2, jump:8.5,
+  fur:'#8a8f94', furDark:'#5c6165', belly:'#c9ced1', eye:'#f2e3c6',
+  blurb:'Colossus · slow but devastating'
+}, makeAttacks('Greataxe')));
 
 addChar(Object.assign({
   id:'gnash', name:'GNASH', species:'Rat', weapon:'Katana',

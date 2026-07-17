@@ -1,4 +1,4 @@
-# Putting Moonfang online
+# Putting Fur & Fury online
 
 This game has two parts:
 
@@ -20,7 +20,7 @@ No credit card is required for the free tier.
 3. Choose **Build and deploy from a Git repository**, then connect your GitHub
    account if asked, and select the `herrpica/monster-game` repository.
 4. Render will detect it's a Node.js project. Fill in:
-   - **Name**: anything you like, e.g. `moonfang`
+   - **Name**: anything you like, e.g. `fur-and-fury`
    - **Branch**: the branch you want live (e.g. `claude/tg-26lfmb`, or `main`
      once this is merged)
    - **Build Command**: `npm install`
@@ -29,7 +29,7 @@ No credit card is required for the free tier.
 5. Click **Create Web Service**. Render will build and start the server —
    this takes a couple of minutes the first time.
 6. When it's done, Render gives you a public URL like
-   `https://moonfang.onrender.com`. That's the link you and your friends
+   `https://fur-and-fury.onrender.com`. That's the link you and your friends
    use to play — everyone visits that same URL, and the "ONLINE" tab in the
    game will let you Quick Match or create a private room together, from any
    device, anywhere.

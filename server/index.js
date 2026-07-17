@@ -33,7 +33,7 @@ function safeName(n){
   return (typeof n==='string' && n.trim()) ? n.trim().slice(0,16) : 'Fighter';
 }
 function safeChar(id){
-  return (typeof id==='string' && id.length<32) ? id : 'gnash';
+  return (typeof id==='string' && id.length<32) ? id : 'shade';
 }
 function clearLoc(id){ playerLoc.delete(id); }
 
@@ -239,5 +239,5 @@ io.on('connection', (socket)=>{
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, ()=>{
-  console.log('Moonfang server listening on port ' + PORT);
+  console.log('Fur & Fury server listening on port ' + PORT);
 });

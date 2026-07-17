@@ -1,8 +1,8 @@
 {
-  "name": "moonfang",
+  "name": "fur-and-fury",
   "version": "1.0.0",
   "private": true,
-  "description": "Moonfang - monster fighting arena, local and online multiplayer",
+  "description": "Fur & Fury - animal/monster fighting arena, local and online multiplayer",
   "scripts": {
     "start": "node server/index.js"
   },
