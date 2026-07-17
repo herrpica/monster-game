@@ -241,7 +241,7 @@ addChar(Object.assign({
   hp:90, speed:4.1, jump:12,
   fur:'#2b2438', furDark:'#1a1624', belly:'#4a4460', eye:'#7bd389',
   blurb:'Silent hunter · deadly claws',
-  sprite:'img/shade.png'
+  sprite:{body:'img/shade_body.png', weapon:'img/shade_weapon.png', pivot:[235,250], weaponPivot:[36,35]}
 }, makeAttacks('War Claws')));
 
 addChar(Object.assign({
@@ -249,7 +249,7 @@ addChar(Object.assign({
   hp:80, speed:4.5, jump:11,
   fur:'#8a7a5c', furDark:'#5c4f38', belly:'#c7b98f', eye:'#ff2e2e',
   blurb:'Scarred and vicious · never backs down',
-  sprite:'img/gnash.png'
+  sprite:{body:'img/gnash_body.png', weapon:'img/gnash_weapon.png', pivot:[90,175], weaponPivot:[21,21]}
 }, makeAttacks('Katana')));
 
 addChar(Object.assign({
@@ -257,7 +257,7 @@ addChar(Object.assign({
   hp:100, speed:3.6, jump:11,
   fur:'#b9863f', furDark:'#7d5c2a', belly:'#e6d3a0', eye:'#ffa726',
   blurb:'Moonlit raider · unbreakable guard',
-  sprite:'img/howler.png'
+  sprite:{body:'img/howler_body.png', weapon:'img/howler_weapon.png', pivot:[50,180], weaponPivot:[41,108]}
 }, makeAttacks('Sword & Shield')));
 
 function allIds(){ return Object.keys(CHARS); }
@@ -266,15 +266,18 @@ const spriteImages = {};
 for(const id of allIds()){
   const c = CHARS[id];
   if(c.sprite){
-    const img = new Image();
-    img.onload = ()=>{ renderCards(); renderOnlineCards(); };
-    img.src = c.sprite;
-    spriteImages[id] = img;
+    const body = new Image();
+    const weapon = new Image();
+    const onAnyLoad = ()=>{ renderCards(); renderOnlineCards(); };
+    body.onload = onAnyLoad; body.src = c.sprite.body;
+    weapon.onload = onAnyLoad; weapon.src = c.sprite.weapon;
+    spriteImages[id] = { body, weapon };
   }
 }
 function hasSprite(char){
-  const img = spriteImages[char.id];
-  return !!(char.sprite && img && img.complete && img.naturalWidth>0);
+  const s = spriteImages[char.id];
+  return !!(char.sprite && s && s.body.complete && s.body.naturalWidth>0
+            && s.weapon.complete && s.weapon.naturalWidth>0);
 }
 
 /* ============ RENDERING HELPERS ============ */
@@ -396,31 +399,73 @@ function drawWeapon(ctx, weapon, hx, hy, swing){
   ctx.restore();
 }
 function drawSpriteBody(ctx, char, anim){
-  const img = spriteImages[char.id];
+  const s = spriteImages[char.id];
+  const bodyImg = s.body, weaponImg = s.weapon;
   const animT = anim.animT||0;
-  const H = 125, W = H*(img.naturalWidth/img.naturalHeight);
-  let bob=0, lean=0, lunge=0, squish=1, alpha=1, koRot=0;
+  const H = 125, W = H*(bodyImg.naturalWidth/bodyImg.naturalHeight);
+  const scale = H/bodyImg.naturalHeight;
 
-  if(anim.state==='idle'){ bob = Math.sin(animT*0.08)*3; }
-  else if(anim.state==='walk'){ bob = Math.abs(Math.sin(animT*0.28))*6; lean = Math.sin(animT*0.28)*0.05; }
-  else if(anim.state==='jump'){ bob = -Math.min(1, Math.abs(anim.vy||0)/14) * 10; }
-  else if(anim.state==='attack' && anim.attack){
-    let prog=0;
-    if(anim.phase==='startup') prog = anim.phaseT/Math.max(1,anim.attack.startup);
-    else if(anim.phase==='active') prog = 1;
-    else prog = Math.max(0, 1-(anim.phaseT/Math.max(1,anim.attack.recover)));
-    lunge = prog*16; lean = prog*0.12;
+  let bob=0, sway=0, lean=0, lunge=0, squishX=1, squishY=1, alpha=1, koRot=0, swingAngle=0;
+  const atk = anim.attack;
+
+  if(anim.state==='idle'){
+    bob = Math.sin(animT*0.05)*2;
+    sway = Math.sin(animT*0.04+1)*1.2;
+    lean = Math.sin(animT*0.05)*0.015;
+    squishY = 1 + Math.sin(animT*0.05)*0.01;
+    swingAngle = Math.sin(animT*0.06)*0.06;
+  } else if(anim.state==='walk'){
+    bob = Math.abs(Math.sin(animT*0.3))*7;
+    sway = Math.sin(animT*0.3)*4;
+    lean = Math.sin(animT*0.3)*0.07;
+    squishY = 1 - Math.abs(Math.sin(animT*0.3))*0.04;
+    swingAngle = Math.sin(animT*0.3+0.6)*0.16;
+  } else if(anim.state==='jump'){
+    const vy = anim.vy||0;
+    bob = -Math.min(1, Math.abs(vy)/14) * 10;
+    if(vy>0){ squishY=1.08; squishX=0.94; } else { squishY=0.94; squishX=1.05; }
+    swingAngle = -Math.max(-0.2, Math.min(0.2, vy*0.015));
+  } else if(anim.state==='attack' && atk){
+    if(anim.phase==='startup'){
+      const p = anim.phaseT/Math.max(1,atk.startup);
+      bob = p*3; lunge = -p*4; lean = -p*0.08;
+      swingAngle = -1.0*p;
+    } else if(anim.phase==='active'){
+      const p = anim.phaseT/Math.max(1,atk.active);
+      lunge = -4 + p*20; lean = -0.08 + p*0.28;
+      swingAngle = -1.0 + 2.3*p;
+    } else {
+      const p = anim.phaseT/Math.max(1,atk.recover);
+      lunge = 16*(1-p); lean = 0.2*(1-p);
+      swingAngle = 1.3*(1-p);
+    }
+  } else if(anim.state==='hitstun'){
+    lunge = -10; lean = -0.12 + Math.sin(animT*0.8)*0.03;
+    swingAngle = 0.5 + Math.sin(animT*0.8)*0.1;
+  } else if(anim.state==='block'){
+    squishY = 0.92; lunge = -4; swingAngle = -0.35;
+  } else if(anim.state==='ko'){
+    koRot = Math.PI/2*0.85 + Math.sin(animT*0.1)*0.02;
+    alpha = 0.9; swingAngle = 1.2;
   }
-  else if(anim.state==='hitstun'){ lunge = -10; lean = -0.1; }
-  else if(anim.state==='block'){ squish = 0.94; lunge = -4; }
-  else if(anim.state==='ko'){ koRot = Math.PI/2*0.85; alpha=0.9; }
 
-  ctx.translate(lunge, bob);
+  ctx.translate(lunge+sway, bob);
   ctx.rotate(lean + koRot);
-  ctx.scale(squish, squish);
+  ctx.scale(squishX, squishY);
   ctx.globalAlpha = alpha;
   if(anim.hitFlash>0) ctx.filter = 'brightness(1.6) saturate(1.3)';
-  ctx.drawImage(img, -W/2, -H, W, H);
+
+  ctx.drawImage(bodyImg, -W/2, -H, W, H);
+
+  const pivotX = -W/2 + char.sprite.pivot[0]*scale;
+  const pivotY = -H + char.sprite.pivot[1]*scale;
+  const wp = char.sprite.weaponPivot;
+  ctx.save();
+  ctx.translate(pivotX, pivotY);
+  ctx.rotate(swingAngle);
+  ctx.drawImage(weaponImg, -wp[0]*scale, -wp[1]*scale, weaponImg.naturalWidth*scale, weaponImg.naturalHeight*scale);
+  ctx.restore();
+
   ctx.filter = 'none';
   ctx.globalAlpha = 1;
 }
