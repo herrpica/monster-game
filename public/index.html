@@ -241,7 +241,7 @@ addChar(Object.assign({
   hp:90, speed:4.1, jump:12,
   fur:'#2b2438', furDark:'#1a1624', belly:'#4a4460', eye:'#7bd389',
   blurb:'Silent hunter · deadly claws',
-  sprite:{body:'img/shade_body.png', weapon:'img/shade_weapon.png', pivot:[235,250], weaponPivot:[36,35]}
+  sprite:{body:'img/shade_body.png', weapon:'img/shade_weapon.png', pivot:[205,222], weaponPivot:[32,32]}
 }, makeAttacks('War Claws')));
 
 addChar(Object.assign({
@@ -249,7 +249,7 @@ addChar(Object.assign({
   hp:80, speed:4.5, jump:11,
   fur:'#8a7a5c', furDark:'#5c4f38', belly:'#c7b98f', eye:'#ff2e2e',
   blurb:'Scarred and vicious · never backs down',
-  sprite:{body:'img/gnash_body.png', weapon:'img/gnash_weapon.png', pivot:[90,175], weaponPivot:[21,21]}
+  sprite:{body:'img/gnash_body.png', weapon:'img/gnash_weapon.png', pivot:[68,128], weaponPivot:[32,32]}
 }, makeAttacks('Katana')));
 
 addChar(Object.assign({
@@ -257,7 +257,7 @@ addChar(Object.assign({
   hp:100, speed:3.6, jump:11,
   fur:'#b9863f', furDark:'#7d5c2a', belly:'#e6d3a0', eye:'#ffa726',
   blurb:'Moonlit raider · unbreakable guard',
-  sprite:{body:'img/howler_body.png', weapon:'img/howler_weapon.png', pivot:[50,180], weaponPivot:[41,108]}
+  sprite:{body:'img/howler_body.png', weapon:'img/howler_weapon.png', pivot:[112,158], weaponPivot:[104,87]}
 }, makeAttacks('Sword & Shield')));
 
 function allIds(){ return Object.keys(CHARS); }
@@ -534,6 +534,7 @@ function renderFighterSprite(ctx, char, ox, oy, facing, anim){
 
 /* ============ GAME STATE ============ */
 const ARENA_W=960, ARENA_H=500, GROUND_Y=400, GRAVITY=0.7, MIN_SEP=34, WORLD_W=1500;
+const PLATFORM_LEFT=150, PLATFORM_RIGHT=WORLD_W-150, FALL_DEATH_Y=-260;
 let vsCpu=false, selectedP1=null, selectedP2=null;
 let fighters=[], phase='select', timer=60, frameCount=0, shake=0, announceTO=null;
 let particles=[];
@@ -731,14 +732,22 @@ function updateFighter(f, fList){
 
   f.y += f.vy;
   f.vy -= GRAVITY;
-  if(f.y<=0){
+  const onPlatform = f.x>=PLATFORM_LEFT && f.x<=PLATFORM_RIGHT;
+  if(f.y<=0 && onPlatform){
     f.y=0; f.vy=0;
     if(!f.onGround){
       f.onGround=true;
       if(f.state==='jump') f.state=(f.input.left||f.input.right)?'walk':'idle';
     }
   } else {
+    if(f.onGround && (f.state==='idle'||f.state==='walk')) f.state='jump';
     f.onGround=false;
+  }
+
+  if(f.state!=='ko' && f.y<FALL_DEATH_Y){
+    f.hp=0; f.state='ko'; f.hitFlash=10;
+    spawnHit(f.x, GROUND_Y-f.y, '#ff6b6b', 16);
+    SFX.ko();
   }
 
   if(f.cooldown>0) f.cooldown--;
@@ -798,9 +807,10 @@ function drawArena(){
   actx.scale(cam.scale, cam.scale);
   actx.translate(-cam.centerX, 0);
 
-  actx.fillStyle='rgba(10,8,18,0.5)'; actx.fillRect(cam.centerX-2500,GROUND_Y,5000,ARENA_H-GROUND_Y);
-  actx.strokeStyle='rgba(242,193,78,.35)'; actx.lineWidth=2/cam.scale;
-  actx.beginPath(); actx.moveTo(cam.centerX-2500,GROUND_Y); actx.lineTo(cam.centerX+2500,GROUND_Y); actx.stroke();
+  actx.fillStyle='rgba(10,8,18,0.5)';
+  actx.fillRect(PLATFORM_LEFT,GROUND_Y,PLATFORM_RIGHT-PLATFORM_LEFT,ARENA_H-GROUND_Y+400);
+  actx.strokeStyle='rgba(242,193,78,.6)'; actx.lineWidth=3/cam.scale;
+  actx.beginPath(); actx.moveTo(PLATFORM_LEFT,GROUND_Y); actx.lineTo(PLATFORM_RIGHT,GROUND_Y); actx.stroke();
 
   const order = fighters.slice().sort((a,b)=>a.x-b.x);
   for(const f of order){
