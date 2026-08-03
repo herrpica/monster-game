@@ -242,7 +242,7 @@ addChar(Object.assign({
   fur:'#2b2438', furDark:'#1a1624', belly:'#4a4460', eye:'#7bd389',
   blurb:'Silent hunter · deadly claws',
   sprite:{body:'img/shade_body.png', weapon:'img/shade_weapon.png', pivot:[205,222], weaponPivot:[32,32],
-    runFrames:{files:['img/shade_run_f0.png','img/shade_run_f1.png','img/shade_run_f2.png','img/shade_run_f3.png','img/shade_run_f4.png','img/shade_run_f5.png','img/shade_run_f6.png','img/shade_run_f7.png','img/shade_run_f8.png','img/shade_run_f9.png'], groundYs:[465,474,478,478,474,465,462,460,460,462], w:444, h:484},
+    runFrames:{files:['img/shade_run_f0.png','img/shade_run_f1.png','img/shade_run_f2.png','img/shade_run_f3.png','img/shade_run_f4.png','img/shade_run_f5.png','img/shade_run_f6.png','img/shade_run_f7.png','img/shade_run_f8.png','img/shade_run_f9.png','img/shade_run_f10.png','img/shade_run_f11.png','img/shade_run_f12.png','img/shade_run_f13.png','img/shade_run_f14.png','img/shade_run_f15.png','img/shade_run_f16.png','img/shade_run_f17.png','img/shade_run_f18.png','img/shade_run_f19.png'], groundYs:[465,472,477,481,484,484,484,481,477,472,465,464,463,462,462,462,462,462,463,464], w:458, h:491},
     stand:{file:'img/shade_stand.png', groundY:597, w:346, h:600}}
 }, makeAttacks('War Claws')));
 
@@ -252,7 +252,7 @@ addChar(Object.assign({
   fur:'#8a7a5c', furDark:'#5c4f38', belly:'#c7b98f', eye:'#ff2e2e',
   blurb:'Scarred and vicious · never backs down',
   sprite:{body:'img/gnash_body.png', weapon:'img/gnash_weapon.png', pivot:[68,128], weaponPivot:[32,32],
-    runFrames:{files:['img/gnash_run_f0.png','img/gnash_run_f1.png','img/gnash_run_f2.png','img/gnash_run_f3.png','img/gnash_run_f4.png','img/gnash_run_f5.png','img/gnash_run_f6.png','img/gnash_run_f7.png','img/gnash_run_f8.png','img/gnash_run_f9.png'], groundYs:[390,408,422,422,408,390,379,370,370,379], w:512, h:430},
+    runFrames:{files:['img/gnash_run_f0.png','img/gnash_run_f1.png','img/gnash_run_f2.png','img/gnash_run_f3.png','img/gnash_run_f4.png','img/gnash_run_f5.png','img/gnash_run_f6.png','img/gnash_run_f7.png','img/gnash_run_f8.png','img/gnash_run_f9.png','img/gnash_run_f10.png','img/gnash_run_f11.png','img/gnash_run_f12.png','img/gnash_run_f13.png','img/gnash_run_f14.png','img/gnash_run_f15.png','img/gnash_run_f16.png','img/gnash_run_f17.png','img/gnash_run_f18.png','img/gnash_run_f19.png'], groundYs:[391,406,419,428,433,434,433,428,419,406,391,383,374,367,364,363,364,367,374,383], w:518, h:443},
     stand:{file:'img/gnash_stand.png', groundY:597, w:374, h:600}}
 }, makeAttacks('Katana')));
 
@@ -262,7 +262,7 @@ addChar(Object.assign({
   fur:'#b9863f', furDark:'#7d5c2a', belly:'#e6d3a0', eye:'#ffa726',
   blurb:'Moonlit raider · unbreakable guard',
   sprite:{body:'img/howler_body.png', weapon:'img/howler_weapon.png', pivot:[112,158], weaponPivot:[104,87],
-    runFrames:{files:['img/howler_run_f0.png','img/howler_run_f1.png','img/howler_run_f2.png','img/howler_run_f3.png','img/howler_run_f4.png','img/howler_run_f5.png','img/howler_run_f6.png','img/howler_run_f7.png','img/howler_run_f8.png','img/howler_run_f9.png'], groundYs:[449,471,484,484,471,449,442,439,439,442], w:455, h:490},
+    runFrames:{files:['img/howler_run_f0.png','img/howler_run_f1.png','img/howler_run_f2.png','img/howler_run_f3.png','img/howler_run_f4.png','img/howler_run_f5.png','img/howler_run_f6.png','img/howler_run_f7.png','img/howler_run_f8.png','img/howler_run_f9.png','img/howler_run_f10.png','img/howler_run_f11.png','img/howler_run_f12.png','img/howler_run_f13.png','img/howler_run_f14.png','img/howler_run_f15.png','img/howler_run_f16.png','img/howler_run_f17.png','img/howler_run_f18.png','img/howler_run_f19.png'], groundYs:[450,466,478,486,490,492,490,486,478,466,450,446,441,441,442,442,442,441,441,446], w:460, h:498},
     stand:{file:'img/howler_stand.png', groundY:597, w:381, h:600}}
 }, makeAttacks('Sword & Shield')));
 
@@ -306,7 +306,7 @@ function runFrameIndex(char, animT){
   const rf = char.sprite && char.sprite.runFrames;
   if(!rf) return 0;
   const N = rf.files.length;
-  const framesPerPose = 5;
+  const framesPerPose = 3;
   return Math.floor((animT||0)/framesPerPose) % N;
 }
 function hasRunSprite(char){
@@ -827,7 +827,7 @@ function updateFighter(f, fList){
 
   if(f.state==='walk' && f.onGround && hasRunSprite(f.char)){
     const runIdx = runFrameIndex(f.char, f.animT);
-    if(runIdx===2 && f.lastRunIdx!==2) spawnHit(f.x, GROUND_Y-1, '#9c8f74', 4);
+    if(runIdx===5 && f.lastRunIdx!==5) spawnHit(f.x, GROUND_Y-1, '#9c8f74', 4);
     f.lastRunIdx = runIdx;
   }
 
