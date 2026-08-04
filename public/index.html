@@ -612,9 +612,6 @@ let vsCpu=false, selectedP1=null, selectedP2=null;
 let fighters=[], phase='select', timer=60, frameCount=0, shake=0, announceTO=null;
 let particles=[];
 
-const arenaBgImg = new Image();
-arenaBgImg.src = 'img/arena-plains.webp';
-
 /* ---- online state ---- */
 let socket=null, netAvailable=false;
 let onlineMode='1v1', onlineSelectedChar=null, currentRoomCode=null, amReady=false;
@@ -872,16 +869,7 @@ function drawArena(){
   const cam = computeCamera();
   actx.save();
   actx.clearRect(0,0,ARENA_W,ARENA_H);
-  if(arenaBgImg.complete && arenaBgImg.naturalWidth>0){
-    const iw=arenaBgImg.naturalWidth, ih=arenaBgImg.naturalHeight;
-    const s = Math.max(ARENA_W/iw, ARENA_H/ih);
-    const dw=iw*s, dh=ih*s;
-    actx.drawImage(arenaBgImg, (ARENA_W-dw)/2, (ARENA_H-dh)/2, dw, dh);
-  } else {
-    const grd = actx.createLinearGradient(0,0,0,ARENA_H);
-    grd.addColorStop(0,'#2a2140'); grd.addColorStop(1,'#150f22');
-    actx.fillStyle=grd; actx.fillRect(0,0,ARENA_W,ARENA_H);
-  }
+  actx.fillStyle='#000000'; actx.fillRect(0,0,ARENA_W,ARENA_H);
 
   actx.translate((Math.random()-0.5)*shake, (Math.random()-0.5)*shake);
   actx.translate(ARENA_W/2, 0);
