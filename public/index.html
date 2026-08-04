@@ -240,73 +240,24 @@ addChar(Object.assign({
   id:'shade', name:'SHADE', species:'Panther', weapon:'War Claws',
   hp:90, speed:4.1, jump:12,
   fur:'#2b2438', furDark:'#1a1624', belly:'#4a4460', eye:'#7bd389',
-  blurb:'Silent hunter · deadly claws',
-  sprite:{body:'img/shade_body.png', weapon:'img/shade_weapon.png', pivot:[205,222], weaponPivot:[32,32],
-    run:'img/shade_run.png',
-    stand:{file:'img/shade_stand.png', groundY:597, w:346, h:600}}
+  blurb:'Silent hunter · deadly claws'
 }, makeAttacks('War Claws')));
 
 addChar(Object.assign({
   id:'gnash', name:'GNASH', species:'Rat', weapon:'Katana',
   hp:80, speed:4.5, jump:11,
   fur:'#8a7a5c', furDark:'#5c4f38', belly:'#c7b98f', eye:'#ff2e2e',
-  blurb:'Scarred and vicious · never backs down',
-  sprite:{body:'img/gnash_body.png', weapon:'img/gnash_weapon.png', pivot:[68,128], weaponPivot:[32,32],
-    run:'img/gnash_run.png',
-    stand:{file:'img/gnash_stand.png', groundY:597, w:374, h:600}}
+  blurb:'Scarred and vicious · never backs down'
 }, makeAttacks('Katana')));
 
 addChar(Object.assign({
   id:'howler', name:'HOWLER', species:'Coyote', weapon:'Sword & Shield',
   hp:100, speed:3.6, jump:11,
   fur:'#b9863f', furDark:'#7d5c2a', belly:'#e6d3a0', eye:'#ffa726',
-  blurb:'Moonlit raider · unbreakable guard',
-  sprite:{body:'img/howler_body.png', weapon:'img/howler_weapon.png', pivot:[112,158], weaponPivot:[104,87],
-    run:'img/howler_run.png',
-    stand:{file:'img/howler_stand.png', groundY:597, w:381, h:600}}
+  blurb:'Moonlit raider · unbreakable guard'
 }, makeAttacks('Sword & Shield')));
 
 function allIds(){ return Object.keys(CHARS); }
-
-const spriteImages = {};
-for(const id of allIds()){
-  const c = CHARS[id];
-  if(c.sprite){
-    const body = new Image();
-    const weapon = new Image();
-    const onAnyLoad = ()=>{ renderCards(); renderOnlineCards(); };
-    body.onload = onAnyLoad; body.src = c.sprite.body;
-    weapon.onload = onAnyLoad; weapon.src = c.sprite.weapon;
-    const entry = { body, weapon };
-    if(c.sprite.run){
-      const run = new Image();
-      run.onload = onAnyLoad; run.src = c.sprite.run;
-      entry.run = run;
-    }
-    if(c.sprite.stand){
-      const stand = new Image();
-      stand.onload = onAnyLoad; stand.src = c.sprite.stand.file;
-      entry.stand = stand;
-    }
-    spriteImages[id] = entry;
-  }
-}
-function hasSprite(char){
-  const s = spriteImages[char.id];
-  return !!(char.sprite && s && s.body.complete && s.body.naturalWidth>0
-            && s.weapon.complete && s.weapon.naturalWidth>0);
-}
-function hasStandSprite(char){
-  const s = spriteImages[char.id];
-  return !!(s && s.stand && s.stand.complete && s.stand.naturalWidth>0);
-}
-function runCross(char, animT){
-  return Math.sin((animT||0)*0.3);
-}
-function hasRunSprite(char){
-  const s = spriteImages[char.id];
-  return !!(s && s.run && s.run.complete && s.run.naturalWidth>0);
-}
 
 /* ============ RENDERING HELPERS ============ */
 const OUTLINE = '#150f22';
@@ -426,144 +377,10 @@ function drawWeapon(ctx, weapon, hx, hy, swing){
   }
   ctx.restore();
 }
-function drawSpriteBody(ctx, char, anim){
-  const s = spriteImages[char.id];
-  const bodyImg = s.body, weaponImg = s.weapon;
-  const animT = anim.animT||0;
-  const H = 125, W = H*(bodyImg.naturalWidth/bodyImg.naturalHeight);
-  const scale = H/bodyImg.naturalHeight;
-
-  let bob=0, sway=0, lean=0, lunge=0, squishX=1, squishY=1, alpha=1, koRot=0, swingAngle=0;
-  const atk = anim.attack;
-
-  if(anim.state==='idle'){
-    bob = Math.sin(animT*0.05)*2;
-    sway = Math.sin(animT*0.04+1)*1.2;
-    lean = Math.sin(animT*0.05)*0.015;
-    squishY = 1 + Math.sin(animT*0.05)*0.01;
-    swingAngle = Math.sin(animT*0.06)*0.06;
-  } else if(anim.state==='walk'){
-    bob = Math.abs(Math.sin(animT*0.3))*7;
-    sway = Math.sin(animT*0.3)*4;
-    lean = Math.sin(animT*0.3)*0.07;
-    squishY = 1 - Math.abs(Math.sin(animT*0.3))*0.04;
-    swingAngle = Math.sin(animT*0.3+0.6)*0.16;
-  } else if(anim.state==='jump'){
-    const vy = anim.vy||0;
-    bob = -Math.min(1, Math.abs(vy)/14) * 10;
-    if(vy>0){ squishY=1.08; squishX=0.94; } else { squishY=0.94; squishX=1.05; }
-    swingAngle = -Math.max(-0.2, Math.min(0.2, vy*0.015));
-  } else if(anim.state==='attack' && atk){
-    if(anim.phase==='startup'){
-      const p = anim.phaseT/Math.max(1,atk.startup);
-      bob = p*3; lunge = -p*4; lean = -p*0.08;
-      swingAngle = -1.0*p;
-    } else if(anim.phase==='active'){
-      const p = anim.phaseT/Math.max(1,atk.active);
-      lunge = -4 + p*20; lean = -0.08 + p*0.28;
-      swingAngle = -1.0 + 2.3*p;
-    } else {
-      const p = anim.phaseT/Math.max(1,atk.recover);
-      lunge = 16*(1-p); lean = 0.2*(1-p);
-      swingAngle = 1.3*(1-p);
-    }
-  } else if(anim.state==='hitstun'){
-    lunge = -10; lean = -0.12 + Math.sin(animT*0.8)*0.03;
-    swingAngle = 0.5 + Math.sin(animT*0.8)*0.1;
-  } else if(anim.state==='block'){
-    squishY = 0.92; lunge = -4; swingAngle = -0.35;
-  } else if(anim.state==='ko'){
-    koRot = Math.PI/2*0.85 + Math.sin(animT*0.1)*0.02;
-    alpha = 0.9; swingAngle = 1.2;
-  }
-
-  ctx.translate(lunge+sway, bob);
-  ctx.rotate(lean + koRot);
-  ctx.scale(squishX, squishY);
-  ctx.globalAlpha = alpha;
-  if(anim.hitFlash>0) ctx.filter = 'brightness(1.6) saturate(1.3)';
-
-  ctx.drawImage(bodyImg, -W/2, -H, W, H);
-
-  const pivotX = -W/2 + char.sprite.pivot[0]*scale;
-  const pivotY = -H + char.sprite.pivot[1]*scale;
-  const wp = char.sprite.weaponPivot;
-  ctx.save();
-  ctx.translate(pivotX, pivotY);
-  ctx.rotate(swingAngle);
-  ctx.drawImage(weaponImg, -wp[0]*scale, -wp[1]*scale, weaponImg.naturalWidth*scale, weaponImg.naturalHeight*scale);
-  ctx.restore();
-
-  ctx.filter = 'none';
-  ctx.globalAlpha = 1;
-}
-function drawRunSprite(ctx, char, anim){
-  const img = spriteImages[char.id].run;
-  const animT = anim.animT||0;
-  const H = 125, W = H*(img.naturalWidth/img.naturalHeight);
-
-  // leg 1 (drawn forward in the source art) swings front->back while leg 2
-  // swings back->front, crossing at the midpoint, then swing back again —
-  // simulated as a crossfade between the normal pose (leg 1 forward) and a
-  // mirrored pose (leg 2 forward) so the motion is continuous, not a snap.
-  const cross = runCross(char, animT);       // -1 (leg2 forward) .. 1 (leg1 forward)
-  const t = (cross+1)/2;                     // 0..1 blend weight for the normal pose
-  const bob = (1-Math.abs(cross))*6;          // lift slightly as the legs pass each other
-  const lean = cross*0.05;
-
-  ctx.translate(0, -bob);
-  ctx.rotate(lean);
-  if(anim.hitFlash>0) ctx.filter = 'brightness(1.6) saturate(1.3)';
-
-  if(t>0.02){
-    ctx.globalAlpha = t;
-    ctx.drawImage(img, -W/2, -H, W, H);
-  }
-  if(t<0.98){
-    ctx.globalAlpha = 1-t;
-    ctx.save();
-    ctx.scale(-1,1);
-    ctx.drawImage(img, -W/2, -H, W, H);
-    ctx.restore();
-  }
-  ctx.globalAlpha = 1;
-  ctx.filter = 'none';
-}
-function drawStandSprite(ctx, char, anim){
-  const img = spriteImages[char.id].stand;
-  const st = char.sprite.stand;
-  const animT = anim.animT||0;
-  const H = 125, W = H*(st.w/st.h);
-  const groundYRatio = st.groundY/st.h;
-
-  const bob = Math.sin(animT*0.05)*1.5;
-  const sway = Math.sin(animT*0.04+1)*0.02;
-
-  ctx.translate(0, bob);
-  ctx.rotate(sway);
-  if(anim.hitFlash>0) ctx.filter = 'brightness(1.6) saturate(1.3)';
-  ctx.drawImage(img, -W/2, -groundYRatio*H, W, H);
-  ctx.filter = 'none';
-}
 function renderFighterSprite(ctx, char, ox, oy, facing, anim){
   ctx.save();
   ctx.translate(ox, oy);
   if(facing<0) ctx.scale(-1,1);
-  if(anim.state==='walk' && hasRunSprite(char)){
-    drawRunSprite(ctx, char, anim);
-    ctx.restore();
-    return;
-  }
-  if(anim.state==='idle' && hasStandSprite(char)){
-    drawStandSprite(ctx, char, anim);
-    ctx.restore();
-    return;
-  }
-  if(hasSprite(char)){
-    drawSpriteBody(ctx, char, anim);
-    ctx.restore();
-    return;
-  }
   const shape = SPECIES_SHAPE[char.species] || {ears:'round',tail:'thin'};
 
   const animT = anim.animT||0;
@@ -835,8 +652,8 @@ function updateFighter(f, fList){
     SFX.ko();
   }
 
-  if(f.state==='walk' && f.onGround && hasRunSprite(f.char)){
-    const planted = Math.abs(runCross(f.char, f.animT)) > 0.9;
+  if(f.state==='walk' && f.onGround){
+    const planted = Math.abs(Math.sin((f.animT||0)*0.35)) > 0.9;
     if(planted && !f.lastFootPlanted) spawnHit(f.x, GROUND_Y-1, '#9c8f74', 4);
     f.lastFootPlanted = planted;
   }
