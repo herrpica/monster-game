@@ -242,7 +242,7 @@ addChar(Object.assign({
   fur:'#2b2438', furDark:'#1a1624', belly:'#4a4460', eye:'#7bd389',
   blurb:'Silent hunter · deadly claws',
   sprite:{body:'img/shade_body.png', weapon:'img/shade_weapon.png', pivot:[205,222], weaponPivot:[32,32],
-    runFrames:{files:['img/shade_run_f0.png','img/shade_run_f1.png','img/shade_run_f2.png','img/shade_run_f3.png','img/shade_run_f4.png','img/shade_run_f5.png','img/shade_run_f6.png','img/shade_run_f7.png','img/shade_run_f8.png','img/shade_run_f9.png','img/shade_run_f10.png','img/shade_run_f11.png','img/shade_run_f12.png','img/shade_run_f13.png','img/shade_run_f14.png','img/shade_run_f15.png','img/shade_run_f16.png','img/shade_run_f17.png','img/shade_run_f18.png','img/shade_run_f19.png'], groundYs:[246,249,252,255,256,256,256,255,252,249,246,245,245,244,244,244,244,244,245,245], w:242, h:260},
+    run:'img/shade_run.png',
     stand:{file:'img/shade_stand.png', groundY:597, w:346, h:600}}
 }, makeAttacks('War Claws')));
 
@@ -252,7 +252,7 @@ addChar(Object.assign({
   fur:'#8a7a5c', furDark:'#5c4f38', belly:'#c7b98f', eye:'#ff2e2e',
   blurb:'Scarred and vicious · never backs down',
   sprite:{body:'img/gnash_body.png', weapon:'img/gnash_weapon.png', pivot:[68,128], weaponPivot:[32,32],
-    runFrames:{files:['img/gnash_run_f0.png','img/gnash_run_f1.png','img/gnash_run_f2.png','img/gnash_run_f3.png','img/gnash_run_f4.png','img/gnash_run_f5.png','img/gnash_run_f6.png','img/gnash_run_f7.png','img/gnash_run_f8.png','img/gnash_run_f9.png','img/gnash_run_f10.png','img/gnash_run_f11.png','img/gnash_run_f12.png','img/gnash_run_f13.png','img/gnash_run_f14.png','img/gnash_run_f15.png','img/gnash_run_f16.png','img/gnash_run_f17.png','img/gnash_run_f18.png','img/gnash_run_f19.png'], groundYs:[229,238,245,251,253,254,253,251,245,238,229,224,219,215,213,213,213,215,219,224], w:304, h:260},
+    run:'img/gnash_run.png',
     stand:{file:'img/gnash_stand.png', groundY:597, w:374, h:600}}
 }, makeAttacks('Katana')));
 
@@ -262,7 +262,7 @@ addChar(Object.assign({
   fur:'#b9863f', furDark:'#7d5c2a', belly:'#e6d3a0', eye:'#ffa726',
   blurb:'Moonlit raider · unbreakable guard',
   sprite:{body:'img/howler_body.png', weapon:'img/howler_weapon.png', pivot:[112,158], weaponPivot:[104,87],
-    runFrames:{files:['img/howler_run_f0.png','img/howler_run_f1.png','img/howler_run_f2.png','img/howler_run_f3.png','img/howler_run_f4.png','img/howler_run_f5.png','img/howler_run_f6.png','img/howler_run_f7.png','img/howler_run_f8.png','img/howler_run_f9.png','img/howler_run_f10.png','img/howler_run_f11.png','img/howler_run_f12.png','img/howler_run_f13.png','img/howler_run_f14.png','img/howler_run_f15.png','img/howler_run_f16.png','img/howler_run_f17.png','img/howler_run_f18.png','img/howler_run_f19.png'], groundYs:[235,243,249,253,256,256,256,253,249,243,235,232,230,230,230,231,230,230,230,232], w:240, h:260},
+    run:'img/howler_run.png',
     stand:{file:'img/howler_stand.png', groundY:597, w:381, h:600}}
 }, makeAttacks('Sword & Shield')));
 
@@ -278,12 +278,10 @@ for(const id of allIds()){
     body.onload = onAnyLoad; body.src = c.sprite.body;
     weapon.onload = onAnyLoad; weapon.src = c.sprite.weapon;
     const entry = { body, weapon };
-    if(c.sprite.runFrames){
-      entry.runFrames = c.sprite.runFrames.files.map(src=>{
-        const im = new Image();
-        im.onload = onAnyLoad; im.src = src;
-        return im;
-      });
+    if(c.sprite.run){
+      const run = new Image();
+      run.onload = onAnyLoad; run.src = c.sprite.run;
+      entry.run = run;
     }
     if(c.sprite.stand){
       const stand = new Image();
@@ -302,16 +300,12 @@ function hasStandSprite(char){
   const s = spriteImages[char.id];
   return !!(s && s.stand && s.stand.complete && s.stand.naturalWidth>0);
 }
-function runFrameIndex(char, animT){
-  const rf = char.sprite && char.sprite.runFrames;
-  if(!rf) return 0;
-  const N = rf.files.length;
-  const framesPerPose = 3;
-  return Math.floor((animT||0)/framesPerPose) % N;
+function runCross(char, animT){
+  return Math.sin((animT||0)*0.3);
 }
 function hasRunSprite(char){
   const s = spriteImages[char.id];
-  return !!(s && s.runFrames && s.runFrames.every(im=>im.complete && im.naturalWidth>0));
+  return !!(s && s.run && s.run.complete && s.run.naturalWidth>0);
 }
 
 /* ============ RENDERING HELPERS ============ */
@@ -504,16 +498,35 @@ function drawSpriteBody(ctx, char, anim){
   ctx.globalAlpha = 1;
 }
 function drawRunSprite(ctx, char, anim){
-  const frames = spriteImages[char.id].runFrames;
-  const rf = char.sprite.runFrames;
+  const img = spriteImages[char.id].run;
   const animT = anim.animT||0;
-  const idx = runFrameIndex(char, animT);
-  const img = frames[idx];
-  const H = 125, W = H*(rf.w/rf.h);
-  const groundYRatio = rf.groundYs[idx]/rf.h;
+  const H = 125, W = H*(img.naturalWidth/img.naturalHeight);
 
+  // leg 1 (drawn forward in the source art) swings front->back while leg 2
+  // swings back->front, crossing at the midpoint, then swing back again —
+  // simulated as a crossfade between the normal pose (leg 1 forward) and a
+  // mirrored pose (leg 2 forward) so the motion is continuous, not a snap.
+  const cross = runCross(char, animT);       // -1 (leg2 forward) .. 1 (leg1 forward)
+  const t = (cross+1)/2;                     // 0..1 blend weight for the normal pose
+  const bob = (1-Math.abs(cross))*6;          // lift slightly as the legs pass each other
+  const lean = cross*0.05;
+
+  ctx.translate(0, -bob);
+  ctx.rotate(lean);
   if(anim.hitFlash>0) ctx.filter = 'brightness(1.6) saturate(1.3)';
-  ctx.drawImage(img, -W/2, -groundYRatio*H, W, H);
+
+  if(t>0.02){
+    ctx.globalAlpha = t;
+    ctx.drawImage(img, -W/2, -H, W, H);
+  }
+  if(t<0.98){
+    ctx.globalAlpha = 1-t;
+    ctx.save();
+    ctx.scale(-1,1);
+    ctx.drawImage(img, -W/2, -H, W, H);
+    ctx.restore();
+  }
+  ctx.globalAlpha = 1;
   ctx.filter = 'none';
 }
 function drawStandSprite(ctx, char, anim){
@@ -823,9 +836,9 @@ function updateFighter(f, fList){
   }
 
   if(f.state==='walk' && f.onGround && hasRunSprite(f.char)){
-    const runIdx = runFrameIndex(f.char, f.animT);
-    if(runIdx===5 && f.lastRunIdx!==5) spawnHit(f.x, GROUND_Y-1, '#9c8f74', 4);
-    f.lastRunIdx = runIdx;
+    const planted = Math.abs(runCross(f.char, f.animT)) > 0.9;
+    if(planted && !f.lastFootPlanted) spawnHit(f.x, GROUND_Y-1, '#9c8f74', 4);
+    f.lastFootPlanted = planted;
   }
 
   if(f.cooldown>0) f.cooldown--;
