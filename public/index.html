@@ -42,6 +42,15 @@
     padding:2px 6px;border-radius:4px;}
   .card .tag.p1{background:var(--blue);color:#0b1f38;}
   .card .tag.p2{background:var(--red);color:#380b0b;}
+  #bgPicker{width:100%;display:flex;flex-direction:column;align-items:center;margin-bottom:6px;}
+  .bgCards{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;
+    width:min(700px,96vw);}
+  .bgCard{background:var(--panel);border:2px solid #3a2f55;border-radius:10px;padding:6px;
+    text-align:center;cursor:pointer;transition:transform .15s,border-color .15s,box-shadow .15s;}
+  .bgCard:hover{transform:translateY(-3px);border-color:var(--ember);}
+  .bgCard.selected{border-color:var(--gold);box-shadow:0 0 0 2px var(--gold) inset;}
+  .bgCard canvas{width:100%;height:70px;display:block;border-radius:6px;}
+  .bgCard .name{font-weight:700;color:var(--gold);font-size:12px;margin-top:4px;}
   #fightBtn{margin:16px 0 6px;background:var(--gold);color:#3a2409;border:2px solid var(--gold);
     border-radius:10px;font-size:19px;padding:10px 34px;font-weight:800;cursor:pointer;
     display:none;letter-spacing:1px;}
@@ -118,6 +127,11 @@
     <div class="sizes" id="topMode">
       <button id="modeLocalBtn" class="active">LOCAL</button>
       <button id="modeOnlineBtn">ONLINE</button>
+    </div>
+
+    <div id="bgPicker">
+      <div class="subtitle">Choose your arena</div>
+      <div class="cards bgCards" id="bgCards"></div>
     </div>
 
     <div id="localPanel">
@@ -258,6 +272,59 @@ addChar(Object.assign({
 }, makeAttacks('Sword & Shield')));
 
 function allIds(){ return Object.keys(CHARS); }
+
+/* ============ ARENA BACKGROUNDS ============ */
+const BACKGROUNDS = [
+  {id:'void', name:'VOID', file:null, swatch:'#000000'},
+  {id:'bg1', name:'ARENA 1', file:'img/bg1.webp', swatch:'#241c38'},
+  {id:'bg2', name:'ARENA 2', file:'img/bg2.webp', swatch:'#241c38'},
+  {id:'bg3', name:'ARENA 3', file:'img/bg3.webp', swatch:'#241c38'}
+];
+const bgImages = {};
+for(const bg of BACKGROUNDS){
+  if(bg.file){
+    const im = new Image();
+    im.onload = ()=>renderBgCards();
+    im.src = bg.file;
+    bgImages[bg.id] = im;
+  }
+}
+function hasBgImage(bg){
+  const im = bgImages[bg.id];
+  return !!(im && im.complete && im.naturalWidth>0);
+}
+let selectedBgId = localStorage.getItem('ffBg') || 'void';
+if(!BACKGROUNDS.some(b=>b.id===selectedBgId)) selectedBgId = 'void';
+function currentBackground(){ return BACKGROUNDS.find(b=>b.id===selectedBgId) || BACKGROUNDS[0]; }
+function renderBgCards(){
+  const wrap = document.getElementById('bgCards');
+  if(!wrap) return;
+  wrap.innerHTML='';
+  for(const bg of BACKGROUNDS){
+    const card=document.createElement('div');
+    card.className='bgCard'+(bg.id===selectedBgId?' selected':'');
+    const cvs=document.createElement('canvas'); cvs.width=140; cvs.height=70;
+    const c = cvs.getContext('2d');
+    if(hasBgImage(bg)){
+      c.drawImage(bgImages[bg.id],0,0,140,70);
+    } else {
+      c.fillStyle = bg.swatch; c.fillRect(0,0,140,70);
+      if(bg.file){
+        c.fillStyle='rgba(242,227,198,.5)'; c.font='11px sans-serif'; c.textAlign='center';
+        c.fillText('coming soon', 70, 39);
+      }
+    }
+    card.appendChild(cvs);
+    const nameDiv=document.createElement('div'); nameDiv.className='name'; nameDiv.textContent=bg.name;
+    card.appendChild(nameDiv);
+    card.addEventListener('click', ()=>{
+      selectedBgId = bg.id;
+      localStorage.setItem('ffBg', bg.id);
+      renderBgCards();
+    });
+    wrap.appendChild(card);
+  }
+}
 
 /* ============ RENDERING HELPERS ============ */
 const OUTLINE = '#150f22';
@@ -699,7 +766,12 @@ function drawArena(){
   const cam = computeCamera();
   actx.save();
   actx.clearRect(0,0,ARENA_W,ARENA_H);
-  actx.fillStyle='#000000'; actx.fillRect(0,0,ARENA_W,ARENA_H);
+  const bg = currentBackground();
+  if(hasBgImage(bg)){
+    actx.drawImage(bgImages[bg.id], 0,0, ARENA_W, ARENA_H);
+  } else {
+    actx.fillStyle='#000000'; actx.fillRect(0,0,ARENA_W,ARENA_H);
+  }
 
   actx.translate((Math.random()-0.5)*shake, (Math.random()-0.5)*shake);
   actx.translate(ARENA_W/2, 0);
@@ -1247,7 +1319,7 @@ function loop(){
   }
 }
 
-renderCards(); updatePrompt(); updateFightBtn();
+renderCards(); updatePrompt(); updateFightBtn(); renderBgCards();
 requestAnimationFrame(loop);
 })();
 </script>
