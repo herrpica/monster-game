@@ -505,6 +505,12 @@ function renderFighterSprite(ctx, char, ox, oy, facing, anim){
 /* ============ GAME STATE ============ */
 const ARENA_W=960, ARENA_H=500, GROUND_Y=400, GRAVITY=0.7, MIN_SEP=34, WORLD_W=1500;
 const PLATFORM_LEFT=150, PLATFORM_RIGHT=WORLD_W-150, FALL_DEATH_Y=-260;
+const UPPER_PLATFORM_Y=100, UPPER_PLATFORM_W=(PLATFORM_RIGHT-PLATFORM_LEFT)/3, UPPER_PLATFORM_OFFSET=300;
+const PLATFORMS=[
+  {left:PLATFORM_LEFT, right:PLATFORM_RIGHT, y:0, thick:400},
+  {left:WORLD_W/2-UPPER_PLATFORM_OFFSET-UPPER_PLATFORM_W/2, right:WORLD_W/2-UPPER_PLATFORM_OFFSET+UPPER_PLATFORM_W/2, y:UPPER_PLATFORM_Y, thick:22},
+  {left:WORLD_W/2+UPPER_PLATFORM_OFFSET-UPPER_PLATFORM_W/2, right:WORLD_W/2+UPPER_PLATFORM_OFFSET+UPPER_PLATFORM_W/2, y:UPPER_PLATFORM_Y, thick:22}
+];
 let vsCpu=false, selectedP1=null, selectedP2=null;
 let fighters=[], phase='select', timer=60, frameCount=0, shake=0, announceTO=null;
 let particles=[];
@@ -699,11 +705,20 @@ function updateFighter(f, fList){
   f.x += f.vx;
   f.x = Math.max(40, Math.min(WORLD_W-40, f.x));
 
+  const prevY = f.y;
   f.y += f.vy;
   f.vy -= GRAVITY;
-  const onPlatform = f.x>=PLATFORM_LEFT && f.x<=PLATFORM_RIGHT;
-  if(f.y<=0 && onPlatform){
-    f.y=0; f.vy=0;
+
+  let landedOn = null;
+  if(f.vy<=0){
+    for(const p of PLATFORMS){
+      if(f.x>=p.left && f.x<=p.right && prevY>=p.y && f.y<=p.y){
+        if(!landedOn || p.y>landedOn.y) landedOn = p;
+      }
+    }
+  }
+  if(landedOn){
+    f.y = landedOn.y; f.vy=0;
     if(!f.onGround){
       f.onGround=true;
       if(f.state==='jump') f.state=(f.input.left||f.input.right)?'walk':'idle';
@@ -735,6 +750,7 @@ function stepPhysics(){
     for(let j=i+1;j<fighters.length;j++){
       const a=fighters[i], b=fighters[j];
       if(a.state==='hitstun'||b.state==='hitstun'||a.state==='ko'||b.state==='ko') continue;
+      if(Math.abs(a.y-b.y)>20) continue;
       const d = Math.abs(a.x-b.x);
       if(d<MIN_SEP){
         const push=(MIN_SEP-d)/2;
@@ -751,16 +767,9 @@ function stepPhysics(){
 const arenaCanvas = document.getElementById('arena');
 const actx = arenaCanvas.getContext('2d');
 function computeCamera(){
-  const alive = fighters.filter(f=>f.state!=='ko');
-  const list = alive.length? alive : fighters;
-  let minX=Infinity, maxX=-Infinity;
-  for(const f of list){ minX=Math.min(minX,f.x); maxX=Math.max(maxX,f.x); }
-  if(!isFinite(minX)){ minX=0; maxX=WORLD_W; }
-  minX -= 170; maxX += 170;
-  const width = Math.max(420, maxX-minX);
-  let scale = Math.min(1, ARENA_W/width);
-  scale = Math.max(0.5, scale);
-  return { scale, centerX:(minX+maxX)/2 };
+  // fixed camera: the whole stage (all platforms) is always in view, brawlhalla-style,
+  // rather than dynamically zooming to the fighters.
+  return { scale: ARENA_W/(WORLD_W+80), centerX: WORLD_W/2 };
 }
 function drawArena(){
   const cam = computeCamera();
@@ -778,10 +787,13 @@ function drawArena(){
   actx.scale(cam.scale, cam.scale);
   actx.translate(-cam.centerX, 0);
 
-  actx.fillStyle='rgba(10,8,18,0.5)';
-  actx.fillRect(PLATFORM_LEFT,GROUND_Y,PLATFORM_RIGHT-PLATFORM_LEFT,ARENA_H-GROUND_Y+400);
-  actx.strokeStyle='rgba(242,193,78,.6)'; actx.lineWidth=3/cam.scale;
-  actx.beginPath(); actx.moveTo(PLATFORM_LEFT,GROUND_Y); actx.lineTo(PLATFORM_RIGHT,GROUND_Y); actx.stroke();
+  for(const p of PLATFORMS){
+    const py = GROUND_Y - p.y;
+    actx.fillStyle='rgba(10,8,18,0.5)';
+    actx.fillRect(p.left, py, p.right-p.left, p.thick);
+    actx.strokeStyle='rgba(242,193,78,.6)'; actx.lineWidth=3/cam.scale;
+    actx.beginPath(); actx.moveTo(p.left,py); actx.lineTo(p.right,py); actx.stroke();
+  }
 
   const order = fighters.slice().sort((a,b)=>a.x-b.x);
   for(const f of order){
