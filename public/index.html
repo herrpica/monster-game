@@ -507,9 +507,9 @@ const ARENA_W=960, ARENA_H=500, GROUND_Y=400, GRAVITY=0.7, MIN_SEP=34, WORLD_W=1
 const PLATFORM_LEFT=150, PLATFORM_RIGHT=WORLD_W-150, FALL_DEATH_Y=-260;
 const UPPER_PLATFORM_Y=100, UPPER_PLATFORM_W=(PLATFORM_RIGHT-PLATFORM_LEFT)/3, UPPER_PLATFORM_OFFSET=300;
 const PLATFORMS=[
-  {left:PLATFORM_LEFT, right:PLATFORM_RIGHT, y:0, thick:400},
-  {left:WORLD_W/2-UPPER_PLATFORM_OFFSET-UPPER_PLATFORM_W/2, right:WORLD_W/2-UPPER_PLATFORM_OFFSET+UPPER_PLATFORM_W/2, y:UPPER_PLATFORM_Y, thick:22},
-  {left:WORLD_W/2+UPPER_PLATFORM_OFFSET-UPPER_PLATFORM_W/2, right:WORLD_W/2+UPPER_PLATFORM_OFFSET+UPPER_PLATFORM_W/2, y:UPPER_PLATFORM_Y, thick:22}
+  {left:PLATFORM_LEFT, right:PLATFORM_RIGHT, y:0, thick:400, fill:'#3a2f55', edge:'#f2c14e'},
+  {left:WORLD_W/2-UPPER_PLATFORM_OFFSET-UPPER_PLATFORM_W/2, right:WORLD_W/2-UPPER_PLATFORM_OFFSET+UPPER_PLATFORM_W/2, y:UPPER_PLATFORM_Y, thick:22, fill:'#2dd4bf', edge:'#a6f5ec'},
+  {left:WORLD_W/2+UPPER_PLATFORM_OFFSET-UPPER_PLATFORM_W/2, right:WORLD_W/2+UPPER_PLATFORM_OFFSET+UPPER_PLATFORM_W/2, y:UPPER_PLATFORM_Y, thick:22, fill:'#2dd4bf', edge:'#a6f5ec'}
 ];
 let vsCpu=false, selectedP1=null, selectedP2=null;
 let fighters=[], phase='select', timer=60, frameCount=0, shake=0, announceTO=null;
@@ -789,9 +789,9 @@ function drawArena(){
 
   for(const p of PLATFORMS){
     const py = GROUND_Y - p.y;
-    actx.fillStyle='rgba(10,8,18,0.5)';
+    actx.fillStyle=p.fill;
     actx.fillRect(p.left, py, p.right-p.left, p.thick);
-    actx.strokeStyle='rgba(242,193,78,.6)'; actx.lineWidth=3/cam.scale;
+    actx.strokeStyle=p.edge; actx.lineWidth=4/cam.scale;
     actx.beginPath(); actx.moveTo(p.left,py); actx.lineTo(p.right,py); actx.stroke();
   }
 
